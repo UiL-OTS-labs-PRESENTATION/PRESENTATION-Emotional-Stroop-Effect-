@@ -1,0 +1,4 @@
+# This is the set definition file for the Emotional Stroop Experiment
+my_pairs(rm_all) :: event_type1 == "Picture" and code1 != "pauze" and trial1 > 7 and time_diff > 0 and time_diff < 10000
+event_pair_table stim_table(subject1, trial1, wordnr1, condition1, colorcode1, word1, code2, rm_type, time_diff)
+print stim_table(my_pairs, "\t", "\n")

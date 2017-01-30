@@ -1,0 +1,42 @@
+subject1	trial1	wordnr1	condition1	colorcode1	word1	code2	rm_type	time_diff
+test	8	2	1	2	hhhhh	2	rm_hit	667.7
+test	11	4	1	4	aaaaa	1	rm_incorrect	603
+test	14	1	1	2	xxxxx	2	rm_hit	469
+test	17	3	1	2	ppppp	2	rm_hit	260.4
+test	20	1	1	4	xxxxx	2	rm_incorrect	300.4
+test	23	4	1	2	aaaaa	1	rm_incorrect	1186.4
+test	26	3	1	2	ppppp	2	rm_hit	285.1
+test	29	2	1	2	hhhhh	2	rm_hit	235.7
+test	32	4	1	2	aaaaa	2	rm_hit	396.3
+test	35	1	1	2	xxxxx	2	rm_hit	367
+test	38	3	1	4	ppppp	2	rm_incorrect	410.4
+test	41	2	1	4	hhhhh	1	rm_incorrect	260.4
+test	44	1	1	4	xxxxx	4	rm_hit	2028.3
+test	47	3	1	4	ppppp	4	rm_hit	621.7
+test	50	2	1	4	hhhhh	2	rm_incorrect	351
+test	53	4	1	4	aaaaa	4	rm_hit	259
+test	56	0	0	0		253	rm_false_alarm	4746.3
+test	59	2	1	2	hhhhh	2	rm_hit	779.7
+test	62	4	1	4	aaaaa	4	rm_hit	671
+test	65	1	1	2	xxxxx	2	rm_hit	1294.3
+test	68	3	1	2	ppppp	2	rm_hit	405
+test	71	1	1	4	xxxxx	4	rm_hit	487
+test	74	4	1	2	aaaaa	2	rm_hit	613.7
+test	77	3	1	2	ppppp	2	rm_hit	775.6
+test	80	2	1	2	hhhhh	2	rm_hit	547
+test	83	4	1	2	aaaaa	2	rm_hit	263.7
+test	86	1	1	2	xxxxx	2	rm_hit	367.7
+test	89	3	1	4	ppppp	4	rm_hit	539
+test	92	2	1	4	hhhhh	2	rm_incorrect	327.7
+test	95	1	1	4	xxxxx	4	rm_hit	509.1
+test	98	3	1	4	ppppp	4	rm_hit	403
+test	101	2	1	4	hhhhh	4	rm_hit	397
+test	104	4	1	4	aaaaa	4	rm_hit	367.7
+test	106	0	0	0		253	rm_false_alarm	4010.9
+test	110	10	2	4	auto	4	rm_hit	1086.4
+test	113	2	2	4	auto	4	rm_hit	447.7
+test	116	6	2	2	auto	4	rm_incorrect	363.1
+test	119	8	2	4	nummer	4	rm_hit	785.6
+test	122	5	2	2	nummer	2	rm_hit	407
+test	125	11	2	4	auto	4	rm_hit	355.7
+

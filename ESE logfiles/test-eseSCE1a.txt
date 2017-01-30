@@ -1,0 +1,10 @@
+subject1	trial1	wordnr1	condition1	colorcode1	word1	code2	rm_type	time_diff
+test	8	2	1	2	hhhhh	253	rm_incorrect	3693.7
+test	11	4	1	4	aaaaa	253	rm_incorrect	1051.1
+test	14	1	1	1	xxxxx	253	rm_incorrect	1098.1
+test	17	3	1	3	ppppp	253	rm_incorrect	423.7
+test	20	1	1	4	xxxxx	253	rm_incorrect	301.4
+test	23	4	1	3	aaaaa	253	rm_incorrect	300.8
+test	26	3	1	2	ppppp	3	rm_incorrect	1649.9
+test	29	2	1	1	hhhhh	3	rm_incorrect	373.3
+

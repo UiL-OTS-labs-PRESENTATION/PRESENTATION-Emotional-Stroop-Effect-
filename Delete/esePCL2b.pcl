@@ -1,0 +1,472 @@
+# This file is made/ adapted by Esther Meeuwissen. For questions esther.meeuwissen@fcdonders.ru.nl
+# may2012 This file is adapted by Marijn Struiksma. For questions m.struiksma@uu.nl
+
+######################################			
+double refr_rate = 60.0;       #refreshrate monitor
+#double refr_dur = (1000.0/refr_rate);
+
+#refr_dur = 1000/refr_rate;
+int refr_dur = 17;
+int IWI = 150;     													#interword interval
+
+int time1;
+
+int duur = 300;														# define parameters; duur,
+int max_paragraphs = 1000;											# max_paragraphs,
+int max_lines = 1000;            								# max-lines,
+int stuur = 0;	
+int nr_prac_items = 4;
+int nr_colors = 4;
+int max_prac_items = nr_prac_items*nr_colors;
+int nr_items = 12;
+int max_items = nr_items*nr_colors;
+
+
+#int stuurdelay = 0;
+#output_port port = output_port_manager.get_port( 1 );   # define output poort as 'port' and port is the first output port (the number of output ports is defined as port_count)
+string itemlijst = "stim_lijst_ese.txt";						# define parameter as a string string. the paramater is itemlist which is a .txt file
+string randomize1 = "which_trial1.txt";							# define parameter as a string string. the paramater is itemlist which is a .txt file
+string randomize2 = "which_trial2.txt";							# define parameter as a string string. the paramater is itemlist which is a .txt file
+string randomize3 = "which_trial3.txt";							# define parameter as a string string. the paramater is itemlist which is a .txt file
+string randomize4 = "which_trial4.txt";							# define parameter as a string string. the paramater is itemlist which is a .txt file
+string randomize5 = "which_trial5.txt";							# define parameter as a string string. the paramater is itemlist which is a .txt file
+string randomize6 = "which_trial6.txt";							# define parameter as a string string. the paramater is itemlist which is a .txt file
+string randomize7 = "which_trial7.txt";							# define parameter as a string string. the paramater is itemlist which is a .txt file
+string randomize8 = "which_trial8.txt";							# define parameter as a string string. the paramater is itemlist which is a .txt file
+string randomize9 = "which_trial9.txt";							# define parameter as a string string. the paramater is itemlist which is a .txt file
+string praclijst = "prac_lijst_ese.txt";							# define parameter as a string string. the paramater is itemlist which is a .txt file
+string pracrandomize = "which_trial_prac.txt";							# define parameter as a string string. the paramater is itemlist which is a .txt file
+
+
+#################################################################################
+# functions needed to read in data
+#################################################################################
+# define variables for practice trials
+array<string> paragraphs1[max_paragraphs][max_lines];		# define an array with strings called paragrapghs1 with {1, ..., 1000}(max_paragraghs) and 1000 (max_lines) times
+int paragraph_count1 = 0;											# define paragragh_count1
+array<int> line_counts1[max_paragraphs]; 						# define array with integers called line_counts1 with {1,...,1000}
+### returns the number of words in a string
+### words must be separated by 1 space only!
+
+sub																		
+   int count_words( string lines )								# define count_words (= number of words in a sentence) and string lines (contains all letters from word/sentences from the txt file)
+begin  																	# 
+   int count = 1;														# define count
+   loop int i = 1 														# define i (= the i-th letter/position in the sentence)
+	until i > lines.count() 										# loop until i larger than lines.count (= the last letter of the sentence)
+	begin																	
+      if (lines[i] == ' ') 										# if you encounter an empty spot in lines (a space), 
+      then	count = count + 1										# add 1 to count 										
+      end;
+      i = i + 1														# go to the nex letter/position and see what is there
+   end;
+   return count														# count is the number of words in the sentence from the txt file
+end;
+
+### splits string into an array of words
+### words must be separated by 1 space only
+
+sub
+   split( string lines, array<string,1>& words )			# split a string with letters into an array with the words of that sentence
+begin
+   int count = 1;														# def count  (number of words)
+   int pos = 1;														# def pos (begin letter of each word)
+   loop int i = 1 															# def i (number of letters)
+	until i > lines.count() 										# loop until i is larger than lines.count (= the last letter of the sentence)
+	begin
+      if (lines[i] == ' ') 										# at a space
+		then words[count] = lines.substring( pos, i - pos );# make a substring from begin till end of the word and put this in the array words at position count 
+           count = count + 1;										# count increases at space
+          pos = i + 1												# pos 1 higher (at the position of the first letter of the next word)
+      end;
+      i = i + 1														# i increases after each letter.
+   end;
+   words[count] = lines.substring( pos, lines.count() - pos + 1 ); # make a substring of the first letter till the last letter + the spatie after each word and put this in words at position count
+end;   
+                           
+#####################################################################################
+### read in the text for the practice trials
+##################################################################################### 
+
+input_file file1 = new input_file;								# define new file
+file1.open( praclijst );											# open the file, called itemlijst
+file1.set_delimiter(42);
+string temp1 = file1.get_line();									# define temp, string with text from the current file position until reaching a delimiter character (enter) 
+paragraph_count1 = 1;												# def paragraph_count, only relevant if you have multiple paragraphs in 1 file
+
+loop until (!file1.last_succeeded()) 									# indicates if the last attempted read method succeeded
+begin
+	if (temp1.find("$")>0)
+	then paragraph_count1 = paragraph_count1 + 1;			# paragraph_count increases
+	else
+      line_counts1[paragraph_count1] = line_counts1[paragraph_count1] + 1; # count the number of lines/trials
+      paragraphs1[paragraph_count1][line_counts1[paragraph_count1]] = temp1; # in paragraph place the text from temp at the position of line_counts 
+   end;
+   temp1 = file1.get_line();											# fill temp with the next line
+end;
+
+array <int> practice [1] = {
+1};
+int max_blocks_prac = practice.count();
+#term.print_line("max_blocks_prac:"+string(max_blocks_prac));
+
+#####################################################################################
+### read in pseudo random presentation for the practice trials
+##################################################################################### 
+# create a list with trial numbers
+# places to put the data
+# doesn't assume table size - 100 line maximum         
+array<int> trials_list_practice[max_blocks_prac][max_prac_items][2];
+array<string> column_names_prac[2]; 
+ 
+input_file in_prac = new input_file;
+in_prac.open( pracrandomize );											# open the file, called itemlijst
+in_prac.set_delimiter( '\t' ); # for get_line()
+column_names_prac[1] = in_prac.get_string();
+column_names_prac[2] = in_prac.get_string();
+int count_prac = 0;
+loop until
+   in_prac.end_of_file() || count_prac == 100 || !in_prac.last_succeeded()
+begin
+   count_prac = count_prac + 1;
+   trials_list_practice[1][count_prac][1] = in_prac.get_int();
+   trials_list_practice[1][count_prac][2] = in_prac.get_int();
+   #term.print( trials_list_practice[1][count_prac][1] );
+   #term.print( "\t" );
+   #term.print( trials_list_practice[1][count_prac][2] );
+   #term.print( "\n" );
+end;  
+
+if !in_prac.last_succeeded() then
+   term.print( "Error while reading!\n" )
+elseif !in_prac.end_of_file() then
+   term.print( "Exceeded capacity!\n" )
+end;   
+
+
+#######################################################################################
+# start the experiment
+######################################	
+#port.send_code(210);
+oefen1.present();														# present the practice trial
+oefen2.present();														# present the practice trial
+oefen3.present();														# present the practice trial
+oefen4.present();														# present the practice trial
+term.print_line("start oefen");
+blank.present();
+
+#####################################################################################
+### present the practice trials
+##################################################################################### 
+
+loop
+   int h = 1															# def i
+until
+   h > 3												# loop from i larger than max_blocks 
+begin
+   # go through all lines
+	int nr_trials_prac=trials_list_practice[1].count();
+	term.print_line("nr_trials_prac:"+string(nr_trials_prac));
+	int nr_paragraph1=practice[1]; 								# determine which conditie is presented
+	int nr_hits = 0;
+	int nr_incorrect = 0;
+	blank.present();
+	
+	loop
+		int trial_nr1 = 1;												# def lines #CHANGE THE NR OF TRIALS PRESENTED
+	until
+		trial_nr1 > nr_trials_prac										# loop through all lines
+	begin
+		int tr_nr1=trials_list_practice[1][trial_nr1][1];						#picks the relevant trial_nr from the shuffled trials_list
+		# go through all words in the lines
+		array<string> words1[count_words( paragraphs1[1][tr_nr1] )]; # make an array with the number of words per trial
+
+		split( paragraphs1[1][tr_nr1], words1 ); 				# split the array trial into an array 'words' with separate words
+		event.set_event_code( words1[1] ); 
+		trial1.present();
+
+		text1.set_caption( words1[2] );   				# the text that is put in word in text1 is the 2nd word(int) in words(array with words)
+		text1.redraw();
+		int letters = words1[2].count();  			# def letters number of letters of each word  
+		string first1 =  (words1[2].substring(1, 1));  # def first as the first letter of the word (word before the critical word starts with an X) 
+		string CW1 = (words1[2].substring(2, letters-1)); # def CW as a string with the second till last letter of the word
+
+		##########################################
+		# present the word (cw)
+		int color_code1=trials_list_practice[1][trial_nr1][2];					#picks the correct color with tr_nr for that 
+		if (color_code1 == 1) then
+			text1.set_font_color(255,0,0);							#changes the color of the word to red
+			event_word.set_target_button(color_code1);			#changes the correct button
+		elseif (color_code1 == 2) then
+			text1.set_font_color(0,255,0); 
+			event_word.set_target_button(color_code1);			#changes the correct button to green
+		elseif (color_code1 == 3) then
+			text1.set_font_color(0,0,255); 
+			event_word.set_target_button(color_code1);			#changes the correct button to blue
+		else
+			text1.set_font_color(255,255,0); 
+			event_word.set_target_button(color_code1);			#changes the correct button to yellow
+		end;
+		text1.set_caption( CW1 ); 
+		text1.redraw(); 
+			
+		#event_word.set_event_code( string(tr_nr1)+first1+string(color_code1)+CW1); 
+		event_word.set_event_code( string(tr_nr1)+";" + first1+ ";" + string(color_code1)+";" + CW1); 
+		term.print("blok_prac:");
+		term.print(h);
+		term.print(" trial_prac:");
+		term.print(trial_nr1);
+		term.print(" word_nr_prac:");
+		term.print(tr_nr1);
+		term.print(" color_prac:");
+		term.print(color_code1);
+		term.print("\n");
+
+			
+		trial_word.present();
+		
+		stimulus_data last = stimulus_manager.last_stimulus_data();
+		if (last.type() == stimulus_hit) then
+			nr_hits = nr_hits + 1;
+			right_feedback.present();
+		elseif (last.type() == stimulus_incorrect) then
+			nr_incorrect = nr_incorrect + 1;
+			wrong_feedback.present();
+		end;
+		
+																			      
+		trial_nr1 = trial_nr1 + 1; 
+	end; # lines loop
+	
+	if h<2 then
+		term.print_line("nr_hits:"+string(nr_hits));
+		h=h+1;
+		breaks.present();										# present the break before each condition
+		endbreak.present();									
+	elseif nr_hits >12 then
+		term.print_line("nr_hits:"+string(nr_hits));
+		eindeoefen.present();												# present end of practice
+		break;
+	else
+		herhaling.present();												# present end of practice
+	end;
+end; # blocks loop
+
+
+term.print_line("einde oefen");
+
+#####################################################################################
+### read in the text
+##################################################################################### 
+# define variables for experimental trials
+array<string> paragraphs[max_paragraphs][max_lines];		# define an array with strings called paragrapghs with {1, ..., 1000}(max_paragraghs) and 1000 (max_lines) times
+int paragraph_count = 0;											# define paragragh_count# define paragragh_count
+array<int> line_counts[max_paragraphs]; 						# define array with integers called line_counts with {1,...,1000}
+
+input_file file = new input_file;								
+file.open( itemlijst );												
+file.set_delimiter(42);
+string temp = file.get_line();									
+paragraph_count = 1;													
+
+loop 
+until (!file.last_succeeded()) 									
+begin
+	#term.print(temp);
+	#term.print("\n");
+
+	if (temp.find("$")>0) then 
+		paragraph_count = paragraph_count + 1;				
+		#term.print("paragraph:");
+		#term.print(paragraph_count);
+		#term.print("\n");
+	else
+      line_counts[paragraph_count] = line_counts[paragraph_count] + 1; 
+      paragraphs[paragraph_count][line_counts[paragraph_count]] = temp; 
+   end;
+   #term.print("line_counts:");
+	#term.print(line_counts[paragraph_count]);
+	#term.print("\n");
+
+   temp = file.get_line();											
+end;
+term.print("nr paragraphs:");
+term.print(paragraph_count);
+term.print(" line_counts:");
+term.print(line_counts[paragraph_count]);
+term.print("\n");
+
+
+#####################################################################################
+### prepare pseudo random presentation
+##################################################################################### 
+
+# Randomizatie van de condities
+# 1=pos, 2=neut, 3=neg
+/*
+# Volgorde A versie 1
+array <int> condities [9] = {
+2,3,1,				# numbers are condities 
+3,1,2,
+1,2,3,};
+*/
+# volgorde B versie 2
+array <int> condities [9] = {
+3,1,2,				# numbers are condities 
+1,2,3,
+2,3,1,};
+/*
+# volgorde C versie 3
+array <int> condities [9] = {
+1,2,3,				# numbers are condities 
+2,3,1,
+3,1,2,};
+*/
+int max_blocks = condities.count();						# determine the maximun numbers of conditions
+term.print_line("max_blocks:"+string(max_blocks));
+
+#####################################################################################
+### read in pseudo random presentation for the trials
+##################################################################################### 
+# create a list with trial numbers
+# places to put the data
+array<int> trials_list[max_blocks][max_items][2];
+array<string> column_names[2]; 
+array<string> rand_lists[max_blocks]; 
+rand_lists[1]=randomize1;
+rand_lists[2]=randomize2;
+rand_lists[3]=randomize3;
+rand_lists[4]=randomize4;
+rand_lists[5]=randomize5;
+rand_lists[6]=randomize6;
+rand_lists[7]=randomize7;
+rand_lists[8]=randomize8;
+rand_lists[9]=randomize9;
+
+loop int b=1 until b > max_blocks begin
+	#term.print_line("b:"+string(b));
+	input_file in = new input_file;
+	in.open( rand_lists[b] );											# open the file, called itemlijst
+	in.set_delimiter( '\t' ); # for get_line()
+	column_names[1] = in.get_string();
+	column_names[2] = in.get_string();
+	loop int count = 1 until
+		in.end_of_file() || !in.last_succeeded() || count > max_items
+	begin
+		trials_list[b][count][1] = in.get_int();
+		trials_list[b][count][2] = in.get_int();
+		#term.print_line("count:"+string(count));
+		#term.print_line("trials_list[b][count][1]:"+string(trials_list[b][count][1]));
+		#term.print_line("trials_list[b][count][2]:"+string(trials_list[b][count][2]));
+		count = count + 1;
+	end;  
+
+	if !in.last_succeeded() then
+		term.print( "Error while reading!\n" )
+	elseif !in.end_of_file() then
+		term.print( "Exceeded capacity!\n" )
+	end; 
+	b=b+1;  
+end;   
+
+#######################################################################################
+### go through all paragraphs
+#######################################################################################
+term.print_line("start experiment");
+#port.send_code(212);
+blank.present();
+
+#loop int r = 1 until r > 2 begin
+	loop
+		int i = 1													# def i
+	until
+		i >  max_blocks												# loop until i is larger than max_blocks 
+	begin
+		# go through all lines
+		int nr_trials=trials_list[i].count();
+		term.print_line("nr_trials:"+string(nr_trials));
+		int nr_paragraph=condities[i]; 						# determine which condition is presented
+		blank.present();
+		
+		loop
+			int trial_nr = 1;												# def lines #CHANGE THE NR OF TRIALS PRESENTED
+		until
+			trial_nr >  nr_trials										# loop through all lines
+		begin
+			int tr_nr=trials_list[i][trial_nr][1];						#picks the relevant trial_nr from the shuffled trials_list
+			# go through all words in the lines
+			array<string> words[count_words( paragraphs[nr_paragraph][tr_nr] )]; # make an array met het aantal with the number of words per trial
+
+			split( paragraphs[nr_paragraph][tr_nr], words ); 				# split the array trial into an array 'words' with separate words
+			event.set_event_code( words[1] ); 
+			trial1.present();
+
+			text1.set_caption( words[2] );   				# the text that is put in word in text1 is the 2nd word(int) in words(array with words)
+			text1.redraw();
+			int letters = words[2].count();  			# def letters number of letters of each word  
+			duur = (letters * 30) + 290;       				# def duur (of the word on the screen) minimum 30 ms per letter + 290 ms 
+			if (letters > 10) then; duur = 590; end;			# more than 10 letters, max woordduur = 590
+			string first =  (words[2].substring(1, 1));  # def first as the first letter of the word (word before the critical word starts with an X) 
+			string CW = (words[2].substring(2, letters-1)); # def CW as a string with the second till last letter of the word
+
+			##########################################
+			# present the word (cw)
+			int color_code=trials_list[i][trial_nr][2];					#picks the correct color with tr_nr for that 
+			if (color_code == 1) then
+				text1.set_font_color(255,0,0);							#changes the color of the word to red
+				event_word.set_target_button(color_code);			#changes the correct button
+			elseif (color_code == 2) then
+				text1.set_font_color(0,255,0); 
+				event_word.set_target_button(color_code);			#changes the correct button to green
+			elseif (color_code == 3) then
+				text1.set_font_color(0,0,255); 
+				event_word.set_target_button(color_code);			#changes the correct button to blue
+			else
+				text1.set_font_color(255,255,0); 
+				event_word.set_target_button(color_code);			#changes the correct button to yellow
+			end;
+			text1.set_caption( CW ); 
+			text1.redraw(); 
+			
+			#event.set_event_code( words1[word1] ); 
+#			event_word.set_event_code( string(tr_nr)+first+string(color_code)+CW); 
+			# 1=pos, 2=neut, 3=neg
+			event_word.set_event_code( string(tr_nr)+";" + first+ ";" + string(color_code)+";" + CW); 
+			term.print("blok:");
+			term.print(i);
+			term.print(" trial:");
+			term.print(trial_nr);
+			term.print(" tr_nr:");
+			term.print(tr_nr);
+			term.print(" color:");
+			term.print(color_code);
+			term.print("\n");
+
+			trial_word.present();
+			#default.present();
+			
+			stimulus_data last1 = stimulus_manager.last_stimulus_data();
+			if (last1.type() == stimulus_hit) then
+				right.present();
+			elseif (last1.type() == stimulus_incorrect) then
+				wrong.present();
+			end;
+			
+			trial_nr = trial_nr + 1;  										# to the next line/sentence
+
+		end; # lines loop
+		#port.send_code(211);
+
+		if i!= max_blocks then
+			breaks.present();										# present the break before each condition
+			endpause.present();									
+		end;
+
+		i = i + 1;	
+	end;
+#	r = r + 1;
+#	breaks.present();										# present the break before each condition
+#	endpause.present();									
+#end;
+einde.present();																# execute trial einde 
+										
